@@ -11,7 +11,7 @@ const usersRouter = Router()
  * Method: POST
  * Body: { email: string, password: string }
  */
-usersRouter.post('/login', loginValidator, loginController)
+usersRouter.post('/login', loginValidator, wrapRequestHandler(loginController))
 
 /**
  * Description: Register a new user
