@@ -6,6 +6,7 @@ import { UserVerifyStatus } from '~/constants/enums'
 import HTTP_STATUS from '~/constants/httpStatus'
 import { USERS_MESSAGES } from '~/constants/messages'
 import {
+  FollowReqBody,
   ForgotPasswordReqBody,
   LoginReqBody,
   LogoutReqBody,
@@ -197,5 +198,13 @@ export const updateMeController = async (
     message: USERS_MESSAGES.UPDATE_ME_SUCCESS,
     result: user
   })
+  return
+}
+
+export const followController = async (req: Request<ParamsDictionary, any, FollowReqBody>, res: Response) => {
+  const { followed_user_id } = req.body
+  const { user_id } = req.decoded_authorization as TokenPayload
+  const result = await usersService.follow(user_id, followed_user_id)
+  res.json(result)
   return
 }
