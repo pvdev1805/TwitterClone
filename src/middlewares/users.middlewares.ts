@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express'
-import { checkSchema, ParamSchema } from 'express-validator'
+import { check, checkSchema, ParamSchema } from 'express-validator'
 import { JsonWebTokenError } from 'jsonwebtoken'
 import { capitalize, isLength, trim } from 'lodash'
 import { ObjectId } from 'mongodb'
@@ -165,6 +165,30 @@ const imageSchema: ParamSchema = {
       max: 400
     },
     errorMessage: USERS_MESSAGES.IMAGE_URL_LENGTH
+  }
+}
+
+const userIdSchema: ParamSchema = {
+  custom: {
+    options: async (value: string, { req }) => {
+      if (!ObjectId.isValid(value)) {
+        throw new ErrorWithStatus({
+          message: USERS_MESSAGES.INVALID_USER_ID,
+          status: HTTP_STATUS.NOT_FOUND
+        })
+      }
+
+      const followed_user = await databaseService.users.findOne({
+        _id: new ObjectId(value)
+      })
+
+      if (followed_user === null) {
+        throw new ErrorWithStatus({
+          message: USERS_MESSAGES.USER_NOT_FOUND,
+          status: HTTP_STATUS.NOT_FOUND
+        })
+      }
+    }
   }
 }
 
@@ -512,29 +536,19 @@ export const updateMeValidator = validate(
 )
 
 export const followValidator = validate(
-  checkSchema({
-    followed_user_id: {
-      custom: {
-        options: async (value: string, { req }) => {
-          if (!ObjectId.isValid(value)) {
-            throw new ErrorWithStatus({
-              message: USERS_MESSAGES.INVALID_FOLLOWED_USER_ID,
-              status: HTTP_STATUS.NOT_FOUND
-            })
-          }
+  checkSchema(
+    {
+      followed_user_id: userIdSchema
+    },
+    ['body']
+  )
+)
 
-          const followed_user = await databaseService.users.findOne({
-            _id: new ObjectId(value)
-          })
-
-          if (followed_user === null) {
-            throw new ErrorWithStatus({
-              message: USERS_MESSAGES.USER_NOT_FOUND,
-              status: HTTP_STATUS.NOT_FOUND
-            })
-          }
-        }
-      }
-    }
-  })
+export const unfollowValidator = validate(
+  checkSchema(
+    {
+      user_id: userIdSchema
+    },
+    ['params']
+  )
 )

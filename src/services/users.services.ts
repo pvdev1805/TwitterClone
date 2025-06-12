@@ -327,6 +327,30 @@ class UsersService {
       message: USERS_MESSAGES.FOLLOWED
     }
   }
+
+  async unfollow(user_id: string, followed_user_id: string) {
+    const follower = await databaseService.followers.findOne({
+      user_id: new ObjectId(user_id),
+      followed_user_id: new ObjectId(followed_user_id)
+    })
+
+    // If document follower is not found, it means the user has not followed the followed_user_id
+    if (follower === null) {
+      return {
+        message: USERS_MESSAGES.ALREADY_UNFOLLOWED
+      }
+    }
+
+    // If document follower is found, it means the user has followed the followed_user_id
+    // So we can delete it
+    await databaseService.followers.deleteOne({
+      user_id: new ObjectId(user_id),
+      followed_user_id: new ObjectId(followed_user_id)
+    })
+    return {
+      message: USERS_MESSAGES.UNFOLLOW_SUCCESS
+    }
+  }
 }
 
 const usersService = new UsersService()
