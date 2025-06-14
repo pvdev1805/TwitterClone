@@ -183,7 +183,7 @@ usersRouter.delete(
  * Body: { old_password: string, new_password: string, confirm_password: string}
  */
 usersRouter.put(
-  'change-password',
+  '/change-password',
   accessTokenValidator,
   verifiedUserValidator,
   changePasswordValidator,
